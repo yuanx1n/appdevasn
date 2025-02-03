@@ -4,6 +4,10 @@ if (typeof global === "undefined") {
 
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import ReportPage from './pages/ReportPage';
+import HomePage from './pages/HomePage';
+import ItemDetailsPage from './pages/ItemDetailsPage';
+
+
 
 import { Avatar, Layout, Menu, Dropdown } from "antd";
 import type { MenuProps } from "antd";
@@ -16,6 +20,7 @@ const App = () => {
 
   const menuItems = [
 
+    { label: 'Home', link: '/homepage' },
     { label: 'Report Lost Item', link: '/reportpage' },
   ];
 
@@ -85,6 +90,11 @@ const App = () => {
 
       <Routes>
       <Route path="/reportpage" element={<ReportPage />} />
+      <Route path="/homepage" element={<HomePage />} />
+      <Route path="/itemdetailspage/:id" element={<ItemDetailsPage />} />
+      <Route path="/" element={<HomePage />} />
+
+
       </Routes>
     </Router>
   );

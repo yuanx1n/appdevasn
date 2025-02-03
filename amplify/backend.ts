@@ -6,5 +6,6 @@ import { storage } from './storage/resource';
 defineBackend({
   auth,
   data,
+  //add s3 storage here
   storage,
 });

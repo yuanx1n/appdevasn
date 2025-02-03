@@ -32,9 +32,10 @@ const schema = a.schema({
       ///claimedby
       claimedby: a.string(),
       //date claimed
-      claimeddate: a.date(),
+      claimeddate: a.string(),
     })
     .authorization(allow => [
+      //access control for admins and users 
       allow.groups(["Admin"]).to(["create","read", "update","delete"]),
       allow.groups(["User"]).to(["read"]),
     ])

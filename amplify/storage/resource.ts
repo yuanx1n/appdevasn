@@ -1,5 +1,6 @@
 import { defineStorage } from '@aws-amplify/backend';
 
+//define s3 storage name, route and access
 export const storage = defineStorage({
   name: 'appdevlostnfoundbucket',
   access: (allow) => ({
