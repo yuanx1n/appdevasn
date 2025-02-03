@@ -26,6 +26,20 @@ const ReportPage: React.FC = () => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [file, setFile] = useState<File | null>(null); // File state
+  const [showCustomCategory, setShowCustomCategory] = useState(false);
+
+
+  const handleCategoryChange = (value: string) => {
+    if (value === "Other") {
+      form.setFieldsValue({ category: "" });
+      setShowCustomCategory(true);
+    }
+  };
+
+  const resetCategory = () => {
+    setShowCustomCategory(false);
+    form.setFieldsValue({ category: undefined }); // Reset the category field
+  };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
@@ -129,16 +143,33 @@ const ReportPage: React.FC = () => {
             <Form.Item
               label="Category"
               name="category"
-              rules={[{ required: true, message: "Please select the category" }]}
+              rules={[{ required: true, message: "Please select or enter a category" }]}
             >
-              <Select placeholder="Select a category">
-                <Select.Option value="Electronics">Electronics</Select.Option>
-                <Select.Option value="Clothing">Clothing</Select.Option>
-                <Select.Option value="Documents">Documents</Select.Option>
-                <Select.Option value="Jewelry">Jewelry</Select.Option>
-                <Select.Option value="Other">Other</Select.Option>
-              </Select>
+              {showCustomCategory ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <Input placeholder="Enter custom category" />
+                  <Button 
+                    type="link" 
+                    onClick={resetCategory}
+                    style={{ padding: 0, alignSelf: 'flex-start' }}
+                  >
+                    ← Back to categories
+                  </Button>
+                </div>
+              ) : (
+                <Select
+                  placeholder="Select a category"
+                  onChange={handleCategoryChange}
+                >
+                  <Select.Option value="Electronics">Electronics</Select.Option>
+                  <Select.Option value="Clothing">Clothing</Select.Option>
+                  <Select.Option value="Documents">Documents</Select.Option>
+                  <Select.Option value="Jewelry">Jewelry</Select.Option>
+                  <Select.Option value="Other">Other (Specify)</Select.Option>
+                </Select>
+              )}
             </Form.Item>
+
 
             <Form.Item
               label="Location Found"

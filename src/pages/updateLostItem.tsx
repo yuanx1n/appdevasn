@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Modal, Form, Input, message, Select, DatePicker, Switch } from "antd";
+import { Modal, Form, Input, message, Select, DatePicker, Switch, Button } from "antd";
 import { generateClient } from "aws-amplify/data";
 import type { Schema } from "../../amplify/data/resource";
 import { uploadData } from "aws-amplify/storage";
@@ -30,6 +30,21 @@ const UpdateLostItem: React.FC<UpdateLostItemProps> = ({ item, onItemUpdated, on
   const [confirmLoading, setConfirmLoading] = useState(false);
   const [form] = Form.useForm();
   const [file, setFile] = useState<File | null>(null);
+  const [showCustomCategory, setShowCustomCategory] = useState(false);
+
+
+  const handleCategoryChange = (value: string) => {
+    if (value === "Other") {
+      form.setFieldsValue({ category: "" });
+      setShowCustomCategory(true);
+    }
+  };
+
+  const resetCategory = () => {
+    setShowCustomCategory(false);
+    form.setFieldsValue({ category: undefined }); // Reset the category field
+  };
+
 
   useEffect(() => {
     form.setFieldsValue({
@@ -183,18 +198,34 @@ const UpdateLostItem: React.FC<UpdateLostItemProps> = ({ item, onItemUpdated, on
         </Form.Item>
 
         <Form.Item
-          label="Category"
-          name="category"
-          rules={[{ required: true, message: "Please select the category" }]}
-        >
-          <Select placeholder="Select a category">
-            <Select.Option value="Electronics">Electronics</Select.Option>
-            <Select.Option value="Clothing">Clothing</Select.Option>
-            <Select.Option value="Documents">Documents</Select.Option>
-            <Select.Option value="Jewelry">Jewelry</Select.Option>
-            <Select.Option value="Other">Other</Select.Option>
-          </Select>
-        </Form.Item>
+              label="Category"
+              name="category"
+              rules={[{ required: true, message: "Please select or enter a category" }]}
+            >
+              {showCustomCategory ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <Input placeholder="Enter custom category" />
+                  <Button 
+                    type="link" 
+                    onClick={resetCategory}
+                    style={{ padding: 0, alignSelf: 'flex-start' }}
+                  >
+                    ← Back to categories
+                  </Button>
+                </div>
+              ) : (
+                <Select
+                  placeholder="Select a category"
+                  onChange={handleCategoryChange}
+                >
+                  <Select.Option value="Electronics">Electronics</Select.Option>
+                  <Select.Option value="Clothing">Clothing</Select.Option>
+                  <Select.Option value="Documents">Documents</Select.Option>
+                  <Select.Option value="Jewelry">Jewelry</Select.Option>
+                  <Select.Option value="Other">Other (Specify)</Select.Option>
+                </Select>
+              )}
+            </Form.Item>
 
         <Form.Item
           label="Location Found"
