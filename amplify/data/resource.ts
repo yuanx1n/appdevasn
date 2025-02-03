@@ -12,6 +12,36 @@ const schema = a.schema({
       content: a.string(),
     })
     .authorization((allow) => [allow.publicApiKey()]),
+  
+
+  //Item for the lost and found
+  LostItem: a
+    .model({
+      name: a.string(),
+      description: a.string(),
+      //category
+      category: a.string(),
+      //where it was found
+      location: a.string(),
+      //picture uploaded
+      imagepath: a.string(),
+      //claimed unclaimed
+      isClaimed: a.boolean(),
+      //date found
+      date: a.string(),
+      ///claimedby
+      claimedby: a.string(),
+      //date claimed
+      claimeddate: a.date(),
+    })
+    .authorization(allow => [
+      allow.groups(["Admin"]).to(["create","read", "update","delete"]),
+      allow.groups(["User"]).to(["read"]),
+    ])
+
+
+
+
 });
 
 export type Schema = ClientSchema<typeof schema>;
