@@ -37,7 +37,7 @@ const schema = a.schema({
     .authorization(allow => [
       //access control for admins and users 
       allow.groups(["Admin"]).to(["create","read", "update","delete"]),
-      allow.groups(["User"]).to(["read"]),
+      allow.groups(["User"]).to(["read","update"]),
     ]),
    
 
