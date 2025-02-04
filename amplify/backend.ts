@@ -21,7 +21,8 @@ const backend = defineBackend({
   categoryDynamoDBFunction, // Add the DynamoDB stream handler function
 });
 
-// 📌 Attach Cognito Group Management Policy to PostConfirmation Lambda
+
+// ✅ Attach Cognito Group Management Policy to PostConfirmation Lambda
 (() => {
   const postConfirmationLambda = backend.postConfirmation.resources.lambda;
 

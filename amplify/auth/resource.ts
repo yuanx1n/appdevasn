@@ -12,8 +12,8 @@ export const auth = defineAuth({
   //user groups admin and user
   groups: ['Admin', 'User'],
     
-  triggers: {
-    postConfirmation,
-  },
+  // triggers: {
+  //   postConfirmation,
+  // },
 
 });
