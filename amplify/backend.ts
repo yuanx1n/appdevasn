@@ -2,10 +2,14 @@ import { defineBackend } from '@aws-amplify/backend';
 import { auth } from './auth/resource';
 import { data } from './data/resource';
 import { storage } from './storage/resource';
-import { Stack } from 'aws-cdk-lib';
+import { Stack, CfnOutput } from 'aws-cdk-lib';
 import * as sns from 'aws-cdk-lib/aws-sns';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import { postConfirmation } from './functions/postConfirmation/resource';
+import { myDynamoDBFunction } from './functions/postConfirmation/dynamoDB-function/resource';
+import { Policy, PolicyStatement, Effect } from "aws-cdk-lib/aws-iam";
+import { StartingPosition, EventSourceMapping } from "aws-cdk-lib/aws-lambda";
+
 
 const backend = defineBackend({
   auth,
@@ -13,6 +17,7 @@ const backend = defineBackend({
   //add s3 storage here
   storage,
   postConfirmation,
+  myDynamoDBFunction,
 });
 
 
@@ -28,3 +33,53 @@ const backend = defineBackend({
 
   postConfirmationLambda.addToRolePolicy(cognitoPolicyStatement);
 })();
+
+// 📌 Create SNS Topic for Lost Item Notifications
+const stack = backend.stack as Stack;
+const lostItemTopic = new sns.Topic(stack, "LostItemNotificationTopic", {
+  displayName: "Lost Item Notifications",
+  topicName: "LostItemTopic",
+});
+// ✅ Export SNS Topic ARN
+new CfnOutput(stack, "LostItemTopicArn", {
+  value: lostItemTopic.topicArn,
+  exportName: "LostItemTopicArn",
+});
+// 📌 Ensure LostItem Table has Streams Enabled
+const lostItemTable = backend.data.resources.tables["LostItem"];
+// ✅ Grant Lambda permission to read DynamoDB stream
+const dynamoDBStreamPolicy = new Policy(Stack.of(lostItemTable), "DynamoDBStreamPolicy", {
+  statements: [
+    new PolicyStatement({
+      effect: Effect.ALLOW,
+      actions: [
+        "dynamodb:DescribeStream",
+        "dynamodb:GetRecords",
+        "dynamodb:GetShardIterator",
+        "dynamodb:ListStreams",
+      ],
+      resources: [lostItemTable.tableStreamArn!], // Ensure correct stream ARN
+    }),
+  ],
+});
+backend.myDynamoDBFunction.resources.lambda.role?.attachInlinePolicy(dynamoDBStreamPolicy);
+// ✅ Grant Lambda permission to publish to SNS
+const snsPublishPolicy = new Policy(Stack.of(lostItemTable), "SNSPublishPolicy", {
+  statements: [
+    new PolicyStatement({
+      effect: Effect.ALLOW,
+      actions: ["sns:Publish"],
+      resources: [lostItemTopic.topicArn],
+    }),
+  ],
+});
+backend.myDynamoDBFunction.resources.lambda.role?.attachInlinePolicy(snsPublishPolicy);
+// 📌 Attach Environment Variable for SNS Topic ARN
+backend.myDynamoDBFunction.addEnvironment("SNS_TOPIC_ARN", lostItemTopic.topicArn);
+// ✅ Attach DynamoDB Stream to Lambda function
+const mapping = new EventSourceMapping(Stack.of(lostItemTable), "LostItemStreamMapping", {
+  target: backend.myDynamoDBFunction.resources.lambda,
+  eventSourceArn: lostItemTable.tableStreamArn,
+  startingPosition: StartingPosition.LATEST,
+});
+mapping.node.addDependency(dynamoDBStreamPolicy);
