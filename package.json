@@ -14,6 +14,8 @@
     "@aws-amplify/core": "^6.9.2",
     "@aws-amplify/ui-react": "^6.9.1",
     "@aws-amplify/ui-react-storage": "^3.7.2",
+    "@aws-lambda-powertools/logger": "^2.13.1",
+    "@aws-sdk/client-sns": "^3.741.0",
     "@heroicons/react": "^2.2.0",
     "@mui/material": "^6.4.2",
     "antd": "^5.23.3",
