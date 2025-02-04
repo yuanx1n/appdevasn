@@ -1,7 +1,6 @@
 import type { Schema } from "../resource"
 
-import output from "../../../amplify_outputs.json"
-
+import amplifyOutputs from "../../../amplify_outputs.json"
 import {
   AdminAddUserToGroupCommand,
   CognitoIdentityProviderClient,
@@ -15,7 +14,7 @@ export const handler: Handler = async (event) => {
   const command = new AdminAddUserToGroupCommand({
     Username: userId,
     GroupName: "User",
-    UserPoolId: output.auth.user_pool_id,
+    UserPoolId: amplifyOutputs.auth.user_pool_id,
   })
   const response = await client.send(command)
   return response
