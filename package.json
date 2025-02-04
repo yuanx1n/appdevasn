@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@aws-amplify/auth": "^6.10.1",
-    "@aws-amplify/core": "^6.9.2",
+    "@aws-amplify/core": "^6.9.3",
     "@aws-amplify/ui-react": "^6.9.1",
     "@aws-amplify/ui-react-storage": "^3.7.2",
     "@aws-sdk/client-sns": "^3.741.0",

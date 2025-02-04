@@ -1,5 +1,5 @@
 import { type ClientSchema, a, defineData } from "@aws-amplify/backend";
-
+import { postConfirmation } from "../functions/postConfirmation/resource";
 /*== STEP 1 ===============================================================
 The section below creates a Todo database table with a "content" field. Try
 adding a new "isDone" field as a boolean. The authorization rule below
@@ -39,10 +39,19 @@ const schema = a.schema({
       allow.groups(["Admin"]).to(["create","read", "update","delete"]),
       allow.groups(["User"]).to(["read"]),
     ]),
-   
+    
+    UserProfile: a
+    .model({
+      email: a.string(),
+      profileOwner: a.string(),
+    })
+    .authorization((allow) => [
+      allow.ownerDefinedIn("profileOwner"),
+    ]),
 
 
-});
+})
+.authorization((allow) => [allow.resource(postConfirmation)]);
 
 export type Schema = ClientSchema<typeof schema>;
 
