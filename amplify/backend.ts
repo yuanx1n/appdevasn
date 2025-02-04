@@ -15,15 +15,16 @@ const backend = defineBackend({
   postConfirmation,
 });
 
-
 // ✅ Attach Cognito Group Management Policy to PostConfirmation Lambda
 (() => {
   const postConfirmationLambda = backend.postConfirmation.resources.lambda;
+  const userPoolArn = backend.auth.resources.userPool.userPoolArn;
+  console.log("User Pool ARN:",userPoolArn);
 
   const cognitoPolicyStatement = new iam.PolicyStatement({
     effect: iam.Effect.ALLOW,
     actions: ["cognito-idp:AdminAddUserToGroup"],
-    resources: ["arn:aws:cognito-idp:us-east-1:314146339169:userpool/us-east-1_yr1ZwdDQN"], // Replace with actual values
+    resources: [userPoolArn],
   });
 
   postConfirmationLambda.addToRolePolicy(cognitoPolicyStatement);
