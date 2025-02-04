@@ -1,13 +1,9 @@
 import { CognitoIdentityProviderClient, AdminAddUserToGroupCommand } from "@aws-sdk/client-cognito-identity-provider";
 import { PostConfirmationTriggerEvent } from "aws-lambda";
-import { Amplify } from "aws-amplify";
 import { generateClient } from "aws-amplify/data";
 import { Schema } from "../../data/resource";
-import outputs from "../../../amplify_outputs.json"
-const cognitoClient = new CognitoIdentityProviderClient({ region: "us-east-1" }); // Change to your AWS region
 
-// Initialize Amplify configuration
-Amplify.configure(outputs);
+const cognitoClient = new CognitoIdentityProviderClient({ region: "us-east-1" }); // Change to your AWS region
 
 
 const client = generateClient<Schema>();
@@ -33,6 +29,8 @@ export const handler = async (event: PostConfirmationTriggerEvent) => {
   } catch (error) {
     console.error("❌ Error adding user to group:", error);
   }
+  console.log("email retrieved in post confirmation",event.request.userAttributes.email)
+  console.log("profile owner retrieved in post confirmation",`${event.request.userAttributes.sub}::${event.userName}`)
 
   // Create the UserProfile in Amplify DataStore
   try {
