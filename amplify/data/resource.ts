@@ -1,4 +1,5 @@
 import { type ClientSchema, a, defineData } from "@aws-amplify/backend";
+import { subscribe } from "../functions/subscribe/resource";
 
 /*== STEP 1 ===============================================================
 The section below creates a Todo database table with a "content" field. Try
@@ -39,7 +40,14 @@ const schema = a.schema({
       allow.groups(["Admin"]).to(["create","read", "update","delete"]),
       allow.groups(["User"]).to(["read","update"]),
     ]),
-   
+   // Add the custom subscribe mutation
+  subscribe: a
+  .mutation() // Use a mutation since this function performs a side effect
+  .arguments({
+    email: a.string(),
+  })
+  .returns(a.string()) // The return value is a string message
+  .handler(a.handler.function(subscribe)),
 
 
 });

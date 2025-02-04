@@ -17,8 +17,10 @@ import { useAuthenticator } from "@aws-amplify/ui-react";
 
 const App = () => {
   const { user, signOut } = useAuthenticator((context) => [context.user]);
+// Access the loginId directly from signInDetails
+const loginId = user?.signInDetails?.loginId;
 
-  const menuItems = [
+console.log(loginId);   const menuItems = [
 
     { label: 'Home', link: '/homepage' },
     { label: 'Report Lost Item', link: '/reportpage' },

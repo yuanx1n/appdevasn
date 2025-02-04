@@ -18,6 +18,11 @@ import { generateClient } from 'aws-amplify/data';
 import { StorageImage } from '@aws-amplify/ui-react-storage';
 import type { Schema } from "../../amplify/data/resource";
 import { fetchAuthSession } from 'aws-amplify/auth';
+// Add these imports at the top
+import { useAuthenticator } from '@aws-amplify/ui-react';
+import { MailOutlined } from '@ant-design/icons';
+
+
 
 const { Meta } = Card;
 const { Content, Footer } = Layout;
@@ -35,6 +40,10 @@ const HomePage: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState<'all' | 'claimed' | 'unclaimed'>('all');
+    // Inside the HomePage component, before the return statement:
+    const { user } = useAuthenticator((context) => [context.user]);
+    const loginId = user?.signInDetails?.loginId;
+    const [subscribeLoading, setSubscribeLoading] = useState(false);
 
     const updateColSpan = () => {
         const width = window.innerWidth;
@@ -43,7 +52,30 @@ const HomePage: React.FC = () => {
         else if (width < 992) setColSpan(8);
         else setColSpan(6);
     };
-
+    const handleSubscribe = async () => {
+        if (!loginId) {
+          message.error('You must be logged in to subscribe!');
+          return;
+        }
+      
+        setSubscribeLoading(true);
+        try {
+          const result = await client.mutations.subscribe({ email: loginId });
+          // Ensure result.data exists before using it
+          if (result.data) {
+            // Since result.data is already a string (as defined by .returns(a.string())), use it directly.
+            message.success(result.data);
+          } else {
+            message.error('No response from the subscription request.');
+          }
+        } catch (error) {
+          console.error('Subscription error:', error);
+          message.error('Failed to process subscription request');
+        } finally {
+          setSubscribeLoading(false);
+        }
+      };
+      
     const refreshList = async () => {
         setLoading(true);
         try {
@@ -146,6 +178,15 @@ const HomePage: React.FC = () => {
                                 { value: 'claimed', label: 'Claimed Items Only' },
                             ]}
                         />
+                        <Button 
+                            type="primary" 
+                            icon={<MailOutlined />}
+                            loading={subscribeLoading}
+                            onClick={handleSubscribe}
+                            style={{ marginLeft: 'auto' }} // This pushes the button to the right
+                        >
+                            Subscribe to Notifications
+                        </Button>
                     </div>
 
                     <Row gutter={[40, 40]}>
