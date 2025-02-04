@@ -1,4 +1,5 @@
 import { type ClientSchema, a, defineData } from "@aws-amplify/backend";
+import { addUserToGroup } from "../data/add-user-to-group/resource"
 
 /*== STEP 1 ===============================================================
 The section below creates a Todo database table with a "content" field. Try
@@ -38,7 +39,16 @@ const schema = a.schema({
       //access control for admins and users 
       allow.groups(["Admin"]).to(["create","read", "update","delete"]),
       allow.groups(["User"]).to(["read"]),
-    ])
+    ]),
+    addUserToGroup: a
+    .mutation()
+    .arguments({
+      userId: a.string().required(),
+      groupName: a.string().required(),
+    })
+    .authorization((allow) => [allow.group("Admin")])
+    .handler(a.handler.function(addUserToGroup))
+    .returns(a.json())
 
 
 

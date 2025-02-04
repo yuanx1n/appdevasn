@@ -3,7 +3,7 @@ import { Layout, Button, message, Breadcrumb, Descriptions, Dropdown, Space, the
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { generateClient } from 'aws-amplify/data';
 import { StorageImage } from '@aws-amplify/ui-react-storage';
-import { type Schema } from '../../amplify/data/resource';
+import type { Schema } from "../../amplify/data/resource";
 import DeleteLostItem from './deleteLostItem';
 import UpdateLostItem from './updateLostItem';
 import { DownOutlined } from '@ant-design/icons';
