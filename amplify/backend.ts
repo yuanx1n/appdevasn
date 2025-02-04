@@ -9,7 +9,7 @@ import { postConfirmation } from './functions/postConfirmation/resource';
 import { myDynamoDBFunction } from './functions/dynamoDB-function/resource';
 import { Policy, PolicyStatement, Effect } from "aws-cdk-lib/aws-iam";
 import { StartingPosition, EventSourceMapping } from "aws-cdk-lib/aws-lambda";
-
+import { subscribe } from './functions/subscribe/resource';
 
 const backend = defineBackend({
   auth,
@@ -18,6 +18,7 @@ const backend = defineBackend({
   storage,
   postConfirmation,
   myDynamoDBFunction,
+  subscribe,
 });
 
 
@@ -84,3 +85,22 @@ const mapping = new EventSourceMapping(Stack.of(lostItemTable), "LostItemStreamM
 });
 mapping.node.addDependency(dynamoDBStreamPolicy);
 
+// ✅ Configure Subscribe Function
+(() => {
+  // Add SNS Topic ARN to environment variables
+  backend.subscribe.addEnvironment("SNS_TOPIC_ARN", lostItemTopic.topicArn);
+
+  // Create SNS Subscribe policy
+  const snsSubscribePolicy = new Policy(stack, "SNSSubscribePolicy-test", {
+    statements: [
+      new PolicyStatement({
+        effect: Effect.ALLOW,
+        actions: ["sns:Subscribe"],
+        resources: [lostItemTopic.topicArn]
+      })
+    ]
+  });
+
+  // Attach policy to subscribe function
+  backend.subscribe.resources.lambda.role?.attachInlinePolicy(snsSubscribePolicy);
+})();
