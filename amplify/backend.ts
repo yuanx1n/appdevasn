@@ -43,7 +43,7 @@ const lostItemTopic = new sns.Topic(stack, "LostItemNotificationTopic", {
 // ✅ Export SNS Topic ARN
 new CfnOutput(stack, "LostItemTopicArn", {
   value: lostItemTopic.topicArn,
-  exportName: "LostItemTopicArn",
+  exportName: "LostItemTopicArn-test",
 });
 // 📌 Ensure LostItem Table has Streams Enabled
 const lostItemTable = backend.data.resources.tables["LostItem"];
