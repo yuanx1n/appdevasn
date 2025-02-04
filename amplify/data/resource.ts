@@ -41,14 +41,19 @@ const schema = a.schema({
       allow.groups(["User"]).to(["read","update"]),
     ]),
    // Add the custom subscribe mutation
-  subscribe: a
-  .mutation() // Use a mutation since this function performs a side effect
-  .arguments({
-    email: a.string(),
-  })
-  .returns(a.string()) // The return value is a string message
-  .handler(a.handler.function(subscribe)),
-
+   subscribe: a
+   .mutation()
+   .arguments({
+     email: a.string()
+   })
+   .returns(a.string())
+   .handler(a.handler.function(subscribe))
+   .authorization(allow => [
+     // Allow authenticated users to call this mutation
+     allow.authenticated(),
+     // Alternatively, allow specific groups:
+     // allow.groups(["Admin", "User"])
+   ]),
 
 });
 
