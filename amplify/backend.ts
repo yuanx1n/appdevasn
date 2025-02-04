@@ -36,12 +36,12 @@ const backend = defineBackend({
 
 // 📌 Create SNS Topic for Lost Item Notifications
 const stack = backend.stack as Stack;
-const lostItemTopic = new sns.Topic(stack, "LostItemNotificationTopic", {
-  displayName: "Lost Item Notifications",
-  topicName: "LostItemTopic",
+const lostItemTopic = new sns.Topic(stack, "LostItemNotificationTopic-test", {
+  displayName: "Lost Item Notifications-test",
+  topicName: "LostItemTopic-test",
 });
 // ✅ Export SNS Topic ARN
-new CfnOutput(stack, "LostItemTopicArn", {
+new CfnOutput(stack, "LostItemTopicArn-test", {
   value: lostItemTopic.topicArn,
   exportName: "LostItemTopicArn-test",
 });
@@ -64,7 +64,7 @@ const dynamoDBStreamPolicy = new Policy(Stack.of(lostItemTable), "DynamoDBStream
 });
 backend.myDynamoDBFunction.resources.lambda.role?.attachInlinePolicy(dynamoDBStreamPolicy);
 // ✅ Grant Lambda permission to publish to SNS
-const snsPublishPolicy = new Policy(Stack.of(lostItemTable), "SNSPublishPolicy", {
+const snsPublishPolicy = new Policy(Stack.of(lostItemTable), "SNSPublishPolicy-test", {
   statements: [
     new PolicyStatement({
       effect: Effect.ALLOW,
@@ -77,7 +77,7 @@ backend.myDynamoDBFunction.resources.lambda.role?.attachInlinePolicy(snsPublishP
 // 📌 Attach Environment Variable for SNS Topic ARN
 backend.myDynamoDBFunction.addEnvironment("SNS_TOPIC_ARN", lostItemTopic.topicArn);
 // ✅ Attach DynamoDB Stream to Lambda function
-const mapping = new EventSourceMapping(Stack.of(lostItemTable), "LostItemStreamMapping", {
+const mapping = new EventSourceMapping(Stack.of(lostItemTable), "LostItemStreamMapping-test", {
   target: backend.myDynamoDBFunction.resources.lambda,
   eventSourceArn: lostItemTable.tableStreamArn,
   startingPosition: StartingPosition.LATEST,
