@@ -6,7 +6,7 @@ import { Stack, CfnOutput } from 'aws-cdk-lib';
 import * as sns from 'aws-cdk-lib/aws-sns';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import { postConfirmation } from './functions/postConfirmation/resource';
-import { myDynamoDBFunction } from './functions/postConfirmation/dynamoDB-function/resource';
+import { myDynamoDBFunction } from './functions/dynamoDB-function/resource';
 import { Policy, PolicyStatement, Effect } from "aws-cdk-lib/aws-iam";
 import { StartingPosition, EventSourceMapping } from "aws-cdk-lib/aws-lambda";
 
@@ -83,3 +83,4 @@ const mapping = new EventSourceMapping(Stack.of(lostItemTable), "LostItemStreamM
   startingPosition: StartingPosition.LATEST,
 });
 mapping.node.addDependency(dynamoDBStreamPolicy);
+
