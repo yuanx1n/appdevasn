@@ -12,24 +12,15 @@ export const handler: Handler<SubscribeEvent> = async (event) => {
     const params = {
       Protocol: 'email',
       TopicArn: process.env.SNS_TOPIC_ARN,
-      Endpoint: event.email
+      Endpoint: event.email,
     };
 
     await snsClient.send(new SubscribeCommand(params));
     
-    return {
-      statusCode: 200,
-      body: JSON.stringify({
-        message: 'Subscription confirmation sent to your email'
-      })
-    };
+    // Return a plain string message that matches your schema
+    return `Subscription confirmation sent to your email`;
   } catch (error) {
     console.error('Subscription error:', error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({
-        message: 'Failed to process subscription request'
-      })
-    };
+    throw new Error('Failed to process subscription request');
   }
 };
