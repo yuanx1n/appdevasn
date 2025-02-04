@@ -3,7 +3,7 @@ import { PostConfirmationTriggerEvent } from "aws-lambda";
 import { Amplify } from "aws-amplify";
 import { generateClient } from "aws-amplify/data";
 import { Schema } from "../../data/resource";
-import outputs from "../../../amplify_outputs.json";
+import outputs from "../../../amplify_outputs.json"
 const cognitoClient = new CognitoIdentityProviderClient({ region: "us-east-1" }); // Change to your AWS region
 
 // Initialize Amplify configuration
