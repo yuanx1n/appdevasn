@@ -20,27 +20,35 @@ export const handler: Handler = async (event) => {
 
     try {
         const params: any = {
-            Protocol: 'email',
-            TopicArn: process.env.SNS_TOPIC_ARN,
-            Endpoint: email,
+          Protocol: 'email',
+          TopicArn: process.env.SNS_TOPIC_ARN,
+          Endpoint: email,
         };
-
-        // Include the category as a message attribute, unless it's an empty string
+    
         if (category && category !== '') {
-            params.MessageAttributes = {
-                'Category': {
-                    DataType: 'String',
-                    StringValue: category,
-                },
-            };
+          params.MessageAttributes = {
+            'Category': {
+              DataType: 'String',
+              StringValue: category,
+            },
+          };
+    
+          // Add a filter policy for category subscription
+          params.FilterPolicy = JSON.stringify({
+            Category: [category],  // Filter based on the category
+          });
+        } else {
+          // If no category is provided, subscribe to all messages
+          params.FilterPolicy = JSON.stringify({
+            Category: ['*'],  // Wildcard to allow all categories
+          });
         }
-
+    
         await snsClient.send(new SubscribeCommand(params));
         console.log(`Subscription confirmation sent to ${email}`);
-
         return; // Change from returning a string to void
-    } catch (error) {
+      } catch (error) {
         console.error('Subscription error:', error);
         throw new Error('Failed to process subscription request');
-    }
-};
+      }
+    };
