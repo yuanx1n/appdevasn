@@ -44,9 +44,7 @@ const schema = a.schema({
    subscribe: a
    .mutation()
    .arguments({
-     email: a.string(),
-     category: a.string(),
-     
+     email: a.string()
    })
    .returns(a.string())
    .handler(a.handler.function(subscribe).async())

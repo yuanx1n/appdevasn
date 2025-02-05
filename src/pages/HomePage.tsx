@@ -11,9 +11,7 @@ import {
     Input,
     Button,
     message,
-    Select,
-    Form,
-    Modal
+    Select
 } from 'antd';
 import { Link } from 'react-router-dom';
 import { generateClient } from 'aws-amplify/data';
@@ -46,12 +44,7 @@ const HomePage: React.FC = () => {
     const { user } = useAuthenticator((context) => [context.user]);
     const loginId = user?.signInDetails?.loginId;
     const [subscribeLoading, setSubscribeLoading] = useState(false);
-    const [showCustomCategory, setShowCustomCategory] = useState(false); // To toggle custom category input
-    const [form] = Form.useForm(); // Form instance to control input field
-    const [category, setCategory] = useState<string>(''); // Category state
-    const [isModalVisible, setIsModalVisible] = useState(false); // For controlling modal visibility
 
-    
     const updateColSpan = () => {
         const width = window.innerWidth;
         if (width < 576) setColSpan(24);
@@ -65,21 +58,15 @@ const HomePage: React.FC = () => {
             return;
         }
     
-        if (!category && category !== '') { // Allow empty string as valid
-            message.error('Please select or enter a category!');
-            return;
-        }
-    
         setSubscribeLoading(true);
         try {
             const response = await client.mutations.subscribe(
-                { email: loginId, category },
-                { authMode: 'userPool' }
+                { email: loginId }, 
+                { authMode: 'userPool' } // Ensure authentication via Cognito
             );
-            console.log("sending subscribe request with", loginId, category);
+                
             if (response) {
                 message.success('Successfully subscribed to notifications!');
-                setIsModalVisible(false); // Close the modal upon success
             } else {
                 throw new Error('Subscription response was empty.');
             }
@@ -91,24 +78,7 @@ const HomePage: React.FC = () => {
         }
     };
     
-
-    const handleCategoryChange = (value: string) => {
-        if (value === 'Other') {
-            setShowCustomCategory(true);
-            setCategory(''); // Clear field if 'Other' is selected
-        } else {
-            setCategory(value || ''); // If the value is empty, set it as an empty string
-            setShowCustomCategory(false);
-        }
-    };
-    
-
-    const resetCategory = () => {
-        setShowCustomCategory(false);
-        form.setFieldsValue({ category: undefined });
-    };
-
-
+      
     const refreshList = async () => {
         setLoading(true);
         try {
@@ -211,10 +181,12 @@ const HomePage: React.FC = () => {
                                 { value: 'claimed', label: 'Claimed Items Only' },
                             ]}
                         />
-                       <Button
-                            type="primary"
+                        <Button 
+                            type="primary" 
                             icon={<MailOutlined />}
-                            onClick={() => setIsModalVisible(true)}
+                            loading={subscribeLoading}
+                            onClick={handleSubscribe}
+                            style={{ marginLeft: 'auto' }} // This pushes the button to the right
                         >
                             Subscribe to Notifications
                         </Button>
@@ -276,60 +248,6 @@ const HomePage: React.FC = () => {
                     />
                 </div>
             </Content>
-            <Modal
-                title="Subscribe to Notifications"
-                visible={isModalVisible}
-                onCancel={() => setIsModalVisible(false)}
-                footer={[
-                    <Button key="back" onClick={() => setIsModalVisible(false)}>
-                        Cancel
-                    </Button>,
-                    <Button
-                        key="submit"
-                        type="primary"
-                        loading={subscribeLoading}
-                        onClick={handleSubscribe}
-                    >
-                        Confirm Subscription
-                    </Button>,
-                ]}
-            >
-               <Form.Item
-                    label="Category"
-                    name="category"
-                    rules={[{ message: 'Please select or enter a category' }]}>
-                    {showCustomCategory ? (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                            <Input
-                                placeholder="Enter custom category"
-                                value={category} // Bind value to category state
-                                onChange={(e) => setCategory(e.target.value)}
-                            />
-                            <Button
-                                type="link"
-                                onClick={resetCategory}
-                                style={{ padding: 0, alignSelf: 'flex-start' }}
-                            >
-                                ← Back to categories
-                            </Button>
-                        </div>
-                    ) : (
-                        <Select
-                            placeholder="Select a category"
-                            onChange={(value) => handleCategoryChange(value)}
-                            value={category || undefined} // Ensure it handles '' as an empty string
-                        >
-                            <Select.Option value="">No Category</Select.Option> {/* Add option for no category */}
-                            <Select.Option value="Electronics">Electronics</Select.Option>
-                            <Select.Option value="Clothing">Clothing</Select.Option>
-                            <Select.Option value="Documents">Documents</Select.Option>
-                            <Select.Option value="Jewelry">Jewelry</Select.Option>
-                            <Select.Option value="Other">Other (Specify)</Select.Option>
-                        </Select>
-                    )}
-                </Form.Item>
-
-            </Modal>
             <Footer style={{ textAlign: 'center' }}>
                 Lost & Found ©{new Date().getFullYear()} Created by Yuanxin
             </Footer>
