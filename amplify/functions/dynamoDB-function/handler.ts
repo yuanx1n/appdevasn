@@ -34,7 +34,7 @@ export const handler: DynamoDBStreamHandler = async (event) => {
             Message: message,
             TopicArn: SNS_TOPIC_ARN,
             MessageAttributes: {
-              'Category': {
+              'category': {
                 DataType: 'String',
                 StringValue: category,
               },
