@@ -78,7 +78,7 @@ const HomePage: React.FC = () => {
             );
             console.log("sending subscribe request with", loginId, category);
             if (response) {
-                message.success('Successfully subscribed to notifications!');
+                message.success('Verification Email Sent!');
                 setIsModalVisible(false); // Close the modal upon success
             } else {
                 throw new Error('Subscription response was empty.');

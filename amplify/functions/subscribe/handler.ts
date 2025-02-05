@@ -45,7 +45,9 @@ export const handler: Handler = async (event) => {
         console.log(`Existing subscription for ${email}: ${existingSub?.SubscriptionArn}`);
 
         // Construct the filter policy
-        const filterPolicy = category ? { category: [category] } : { category: ['*'] };
+        const filterPolicy = (category && category !== '')
+                ? { category: [category] }
+                : { category: [ { exists: true } ] };
         const filterPolicyString = JSON.stringify(filterPolicy);
 
         if (existingSub?.SubscriptionArn && existingSub.SubscriptionArn.split(":").length >= 6) {
