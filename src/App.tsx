@@ -1,4 +1,3 @@
-import React from 'react';
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import ReportPage from './pages/ReportPage';
 import HomePage from './pages/HomePage';
