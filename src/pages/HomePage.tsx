@@ -78,7 +78,7 @@ const HomePage: React.FC = () => {
             );
             console.log("sending subscribe request with", loginId, category);
             if (response) {
-                message.success('Verification Email Sent!');
+                message.success('For First time subscription, please verify email. Else Subscription change was successful!');
                 setIsModalVisible(false); // Close the modal upon success
             } else {
                 throw new Error('Subscription response was empty.');
@@ -185,7 +185,7 @@ const HomePage: React.FC = () => {
         <Layout>
             <Content style={{ padding: '0 48px' }}>
                 <Breadcrumb style={{ margin: '16px 0' }}>
-                    <Breadcrumb.Item>Lost Items</Breadcrumb.Item>
+                    <h2>Lost Items</h2>
                 </Breadcrumb>
                 <div
                     style={{

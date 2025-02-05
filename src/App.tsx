@@ -1,28 +1,23 @@
-if (typeof global === "undefined") {
-  window.global = window;
-}
-
+import React from 'react';
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import ReportPage from './pages/ReportPage';
 import HomePage from './pages/HomePage';
 import ItemDetailsPage from './pages/ItemDetailsPage';
+import { Layout, Menu, Dropdown, Avatar, Space, Typography } from 'antd';
+import type { MenuProps } from 'antd';
+import { useAuthenticator } from '@aws-amplify/ui-react';
+import { MailOutlined } from '@ant-design/icons';
 
-
-
-import { Avatar, Layout, Menu, Dropdown } from "antd";
-import type { MenuProps } from "antd";
-const { Header } = Layout;
-
-import { useAuthenticator } from "@aws-amplify/ui-react";
+const { Header, Content, Footer } = Layout;
+const { Title } = Typography;
 
 const App = () => {
   const { user, signOut } = useAuthenticator((context) => [context.user]);
-// Access the loginId directly from signInDetails
-const loginId = user?.signInDetails?.loginId;
+  // Access the loginId directly from signInDetails
+  const loginId = user?.signInDetails?.loginId;
 
-console.log(loginId);   const menuItems = [
-
-    { label: 'Home', link: '/homepage' },
+  // Define your navigation menu items
+  const menuItems = [
     { label: 'Report Lost Item', link: '/reportpage' },
   ];
 
@@ -31,20 +26,33 @@ console.log(loginId);   const menuItems = [
     label: <Link to={item.link}>{item.label}</Link>,
   }));
 
+  // Define the dropdown menu for the user avatar
   const avatarMenu = (
     <Menu
       items={[
         {
-          key: "1",
+          key: "profile",
           label: <Link to="/profile">Profile</Link>,
         },
         {
-          key: "2",
+          key: "settings",
           label: <Link to="/settings">Settings</Link>,
         },
         {
-          key: "3",
-          label: <button onClick={signOut}>Sign out</button>,
+          key: "signout",
+          label: (
+            <button
+              onClick={signOut}
+              style={{
+                border: 'none',
+                background: 'none',
+                cursor: 'pointer',
+                padding: 0,
+              }}
+            >
+              Sign out
+            </button>
+          ),
         },
       ]}
     />
@@ -52,52 +60,50 @@ console.log(loginId);   const menuItems = [
 
   return (
     <Router>
-      <Header
-        style={{
-          position: "sticky",
-          top: 0,
-          zIndex: 1,
-          width: "100%",
-          display: "flex",
-          alignItems: "center",
-          padding: 0, // Remove default padding
-        }}
-      >
-        <div style={{ flex: 1, display: "flex", alignItems: "center" }}>
-          <Menu
-            theme="dark"
-            mode="horizontal"
-            defaultSelectedKeys={["2"]}
-            items={items}
-            style={{
-              flex: 1,
-              minWidth: 0,
-              margin: 0, // Remove margin
-              padding: 0, // Remove padding
-            }}
-          />
-        </div>
-        <h4 style={{color:'white'}}>currentuser : {user?.username}</h4>
-        <Dropdown overlay={avatarMenu} placement="bottomRight" trigger={['click']}>
-          <Avatar
-            style={{
-              cursor: "pointer",
-              marginRight: 16, // Optional spacing if needed
-            }}
-            src="https://api.dicebear.com/7.x/miniavs/svg?seed=avatar"
-            alt="User Avatar"
-          />
-        </Dropdown>
-      </Header>
+      <Layout>
+        <Header
+          style={{
+            background: '#001529',
+            display: 'flex',
+            alignItems: 'center',
+            padding: '0 20px',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+          <Title level={3} style={{ color: '#fff', margin: 0, marginRight: '20px' }}>
+              <Link to="/" style={{ color: '#fff' }}>NYP Lost &amp; Found</Link>
+            </Title>
+            <Menu
+              theme="dark"
+              mode="horizontal"
+              defaultSelectedKeys={["Home"]}
+              items={items}
+              style={{ flex: 1, background: 'transparent', borderBottom: 'none' }}
+            />
+          </div>
+          <Space>
+            {loginId && <span style={{ color: '#fff' }}>{loginId}</span>}
+            <Dropdown overlay={avatarMenu} trigger={['click']}>
+              <Avatar style={{ cursor: 'pointer' }} size="large">
+                {loginId ? loginId.charAt(0).toUpperCase() : <MailOutlined />}
+              </Avatar>
+            </Dropdown>
+          </Space>
+        </Header>
 
-      <Routes>
-      <Route path="/reportpage" element={<ReportPage />} />
-      <Route path="/homepage" element={<HomePage />} />
-      <Route path="/itemdetailspage/:id" element={<ItemDetailsPage />} />
-      <Route path="/" element={<HomePage />} />
+        <Content style={{ padding: '20px' }}>
+          <Routes>
+            <Route path="/reportpage" element={<ReportPage />} />
+            <Route path="/homepage" element={<HomePage />} />
+            <Route path="/itemdetailspage/:id" element={<ItemDetailsPage />} />
+            <Route path="/" element={<HomePage />} />
+          </Routes>
+        </Content>
 
-
-      </Routes>
+        <Footer style={{ textAlign: 'center' }}>
+          Lost & Found ©{new Date().getFullYear()} Created by Yuanxin
+        </Footer>
+      </Layout>
     </Router>
   );
 };
