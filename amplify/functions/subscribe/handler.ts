@@ -1,25 +1,39 @@
 import { SNSClient, SubscribeCommand } from '@aws-sdk/client-sns';
 import type { Schema } from '../../data/resource';
 
-
 const snsClient = new SNSClient({ region: 'us-east-1' });
 
 interface SubscribeEvent {
   email: string;
+  category: string;  
 }
-type Handler = Schema["subscribe"]["functionHandler"]
+
+type Handler = Schema["subscribe"]["functionHandler"];
 
 export const handler: Handler = async (event) => {
     const email = event.arguments.email;
+    const category = event.arguments.category; // Retrieve category from event arguments
+
     if (!email) {
         throw new Error("Email is required for subscription.");
     }
+
     try {
-        const params = {
+        const params: any = {
             Protocol: 'email',
             TopicArn: process.env.SNS_TOPIC_ARN,
             Endpoint: email,
         };
+
+        // Include the category as a message attribute, unless it's an empty string
+        if (category && category !== '') {
+            params.MessageAttributes = {
+                'Category': {
+                    DataType: 'String',
+                    StringValue: category,
+                },
+            };
+        }
 
         await snsClient.send(new SubscribeCommand(params));
         console.log(`Subscription confirmation sent to ${email}`);
@@ -30,4 +44,3 @@ export const handler: Handler = async (event) => {
         throw new Error('Failed to process subscription request');
     }
 };
-
