@@ -95,7 +95,11 @@ mapping.node.addDependency(dynamoDBStreamPolicy);
     statements: [
       new PolicyStatement({
         effect: Effect.ALLOW,
-        actions: ["sns:Subscribe"],
+        actions: ["sns:Subscribe",
+        "sns:SetSubscriptionAttributes",
+        "sns:ListSubscriptionsByTopic",
+        "sns:Publish",
+        "sns:Unsubscribe"],
         resources: [lostItemTopic.topicArn]
       })
     ]
