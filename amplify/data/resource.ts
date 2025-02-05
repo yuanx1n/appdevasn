@@ -47,12 +47,12 @@ const schema = a.schema({
      email: a.string()
    })
    .returns(a.string())
-   .handler(a.handler.function(subscribe))
+   .handler(a.handler.function(subscribe).async())
    .authorization(allow => [
      // Allow authenticated users to call this mutation
      allow.authenticated(),
      // Alternatively, allow specific groups:
-     // allow.groups(["Admin", "User"])
+    //  allow.groups(["Admin", "User"])
    ]),
 
 });

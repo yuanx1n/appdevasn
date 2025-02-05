@@ -54,27 +54,27 @@ const HomePage: React.FC = () => {
     };
     const handleSubscribe = async () => {
         if (!loginId) {
-          message.error('You must be logged in to subscribe!');
-          return;
+            message.error('You must be logged in to subscribe!');
+            return;
         }
-      
+    
         setSubscribeLoading(true);
         try {
-          const result = await client.mutations.subscribe({ email: loginId });
-          // Ensure result.data exists before using it
-          if (result.data) {
-            // Since result.data is already a string (as defined by .returns(a.string())), use it directly.
-            message.success(result.data);
-          } else {
-            message.error('No response from the subscription request.');
-          }
+            const response = await client.mutations.subscribe({ email: loginId });
+            
+            if (response) {
+                message.success('Successfully subscribed to notifications!');
+            } else {
+                throw new Error('Subscription response was empty.');
+            }
         } catch (error) {
-          console.error('Subscription error:', error);
-          message.error('Failed to process subscription request');
+            console.error('Subscription error:', error);
+            message.error('Failed to subscribe. Please try again later.');
         } finally {
-          setSubscribeLoading(false);
+            setSubscribeLoading(false);
         }
-      };
+    };
+    
       
     const refreshList = async () => {
         setLoading(true);
