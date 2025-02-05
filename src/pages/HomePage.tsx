@@ -60,8 +60,11 @@ const HomePage: React.FC = () => {
     
         setSubscribeLoading(true);
         try {
-            const response = await client.mutations.subscribe({ email: loginId });
-            
+            const response = await client.mutations.subscribe(
+                { email: loginId }, 
+                { authMode: 'userPool' } // Ensure authentication via Cognito
+            );
+                
             if (response) {
                 message.success('Successfully subscribed to notifications!');
             } else {
