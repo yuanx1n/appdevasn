@@ -21,7 +21,7 @@ import type { Schema } from "../../amplify/data/resource";
 import { fetchAuthSession } from 'aws-amplify/auth';
 
 const { Meta } = Card;
-const { Content, Footer } = Layout;
+const { Content } = Layout;
 const { Search } = Input;
 
 const client = generateClient<Schema>();
@@ -239,9 +239,7 @@ const HomePage: React.FC = () => {
                 </div>
             </Content>
             
-            <Footer style={{ textAlign: 'center' }}>
-                Lost & Found ©{new Date().getFullYear()} Created by Yuanxin
-            </Footer>
+
         </Layout>
     );
 };

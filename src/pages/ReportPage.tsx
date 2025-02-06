@@ -8,7 +8,7 @@ import { generateClient } from "aws-amplify/data";
 import dayjs from "dayjs"; // Import dayjs for date formatting
 
 const { TextArea } = Input;
-const { Content, Footer } = Layout;
+const { Content } = Layout;
 
 const client = generateClient<Schema>();
 
@@ -229,9 +229,7 @@ const ReportPage: React.FC = () => {
           </Form>
         </div>
       </Content>
-      <Footer style={{ textAlign: "center" }}>
-        Lost and Found Management ©{new Date().getFullYear()} Created by Yuanxin
-      </Footer>
+
     </Layout>
   );
 };
