@@ -12,15 +12,13 @@ import {
     Button,
     message,
     Select,
+    Tag,
 } from 'antd';
 import { Link } from 'react-router-dom';
 import { generateClient } from 'aws-amplify/data';
 import { StorageImage } from '@aws-amplify/ui-react-storage';
 import type { Schema } from "../../amplify/data/resource";
 import { fetchAuthSession } from 'aws-amplify/auth';
-// Add these imports at the top
-
-
 
 const { Meta } = Card;
 const { Content, Footer } = Layout;
@@ -38,9 +36,8 @@ const HomePage: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState<'all' | 'claimed' | 'unclaimed'>('all');
-    // Inside the HomePage component, before the return statement:
+    const [categoryTags, setCategoryTags] = useState<string[]>([]); // Track the tags for filtering
 
-    
     const updateColSpan = () => {
         const width = window.innerWidth;
         if (width < 576) setColSpan(24);
@@ -48,11 +45,6 @@ const HomePage: React.FC = () => {
         else if (width < 992) setColSpan(8);
         else setColSpan(6);
     };
-    
-
-
-
-
 
     const refreshList = async () => {
         setLoading(true);
@@ -68,30 +60,46 @@ const HomePage: React.FC = () => {
     };
 
     useEffect(() => {
+        refreshList();
+        window.addEventListener('resize', updateColSpan);
+        return () => window.removeEventListener('resize', updateColSpan);
+    }, []);
+
+    useEffect(() => {
         const lowerSearchTerm = searchTerm.toLowerCase();
-        
         const filtered = allItems.filter(item => {
             // Status filter
             const statusMatch = statusFilter === 'all' || 
                 (statusFilter === 'claimed' && item.isClaimed) ||
                 (statusFilter === 'unclaimed' && !item.isClaimed);
-            
+    
             // Search term filter
             const searchMatch = lowerSearchTerm === '' ||
                 item.name.toLowerCase().includes(lowerSearchTerm) ||
                 item.description.toLowerCase().includes(lowerSearchTerm);
-
-            return statusMatch && searchMatch;
+    
+            // Category tags filter (Match any tag, not necessarily all)
+            const categoryMatch = categoryTags.length === 0 || categoryTags.some(tag => 
+                item.category.toLowerCase().includes(tag.toLowerCase())
+            );
+    
+            return statusMatch && searchMatch && categoryMatch;
         });
-
+    
         setFilteredItems(filtered);
-    }, [searchTerm, statusFilter, allItems]);
+    }, [searchTerm, statusFilter, allItems, categoryTags]);
+    
 
-    useEffect(() => {
-        refreshList();
-        window.addEventListener('resize', updateColSpan);
-        return () => window.removeEventListener('resize', updateColSpan);
-    }, []);
+    const handleCategoryTagAdd = (value: string) => {
+        if (value && !categoryTags.includes(value)) {
+            setCategoryTags([...categoryTags, value]);
+        }
+        setSearchTerm(''); // Clear the search term after adding a tag
+    };
+
+    const handleCategoryTagRemove = (tag: string) => {
+        setCategoryTags(categoryTags.filter(t => t !== tag));
+    };
 
     const descriptionStyle = {
         display: '-webkit-box',
@@ -101,20 +109,17 @@ const HomePage: React.FC = () => {
         height: '40px',
     };
 
-    // Function to claim an item
     const claimItem = async (item: any) => {
-        const currentDate = new Date().toISOString().split('T')[0]; // Get the date in YYYY-MM-DD format
-        // Get current user's ID from Cognito
+        const currentDate = new Date().toISOString().split('T')[0];
         const authSession = await fetchAuthSession();
-        const userId = authSession.tokens?.idToken?.payload.sub; // Correct path
+        const userId = authSession.tokens?.idToken?.payload.sub;
         try {
             await client.models.LostItem.update(
                 {
-                  id: item.id,
-                  isClaimed: true,
-                  claimedby: userId, // Replace with actual user
-                  claimeddate: currentDate,
-                  
+                    id: item.id,
+                    isClaimed: true,
+                    claimedby: userId,
+                    claimeddate: currentDate,
                 },
                 { authMode: "userPool" }
             );
@@ -156,7 +161,25 @@ const HomePage: React.FC = () => {
                                 { value: 'claimed', label: 'Claimed Items Only' },
                             ]}
                         />
+                    </div>
 
+                    <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
+                        <Search
+                            placeholder="Search categories with tags"
+                            onSearch={handleCategoryTagAdd}
+                            style={{ width: 200 }}
+                        />
+                        <div>
+                            {categoryTags.map((tag) => (
+                                <Tag
+                                    key={tag}
+                                    closable
+                                    onClose={() => handleCategoryTagRemove(tag)}
+                                >
+                                    {tag}
+                                </Tag>
+                            ))}
+                        </div>
                     </div>
 
                     <Row gutter={[40, 40]}>
