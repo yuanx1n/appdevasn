@@ -8,6 +8,11 @@ import { Authenticator } from '@aws-amplify/ui-react';
 import '@aws-amplify/ui-react/styles.css';
 
 Amplify.configure(outputs);
+//deploy backend first i guess
+// Amplify.configure({
+//   ...Amplify.getConfig(),
+//   Predictions: outputs.custom.Predictions,
+// });
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
    

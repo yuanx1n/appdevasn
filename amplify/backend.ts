@@ -108,3 +108,30 @@ mapping.node.addDependency(dynamoDBStreamPolicy);
   // Attach policy to subscribe function
   backend.subscribe.resources.lambda.role?.attachInlinePolicy(snsSubscribePolicy);
 })();
+
+// Configure a policy for the required use case.
+// The actions included below cover all supported ML capabilities
+backend.auth.resources.unauthenticatedUserIamRole.addToPrincipalPolicy(
+  new PolicyStatement({
+    actions: [
+      
+      "rekognition:DetectLabels",
+      "rekognition:DetectLabel",
+    ],
+    resources: ["*"],
+  })
+);
+
+backend.addOutput({
+  custom: {
+    Predictions: {
+        identifyLabels: {
+          defaults: {
+            type: "ALL",
+          },
+          proxy: false,
+          region: backend.auth.stack.region,
+        }
+    },
+  },
+});
