@@ -111,7 +111,18 @@ mapping.node.addDependency(dynamoDBStreamPolicy);
 
 // Configure a policy for the required use case.
 // The actions included below cover all supported ML capabilities
-backend.auth.resources.unauthenticatedUserIamRole.addToPrincipalPolicy(
+backend.auth.resources.groups["Admin"].role.addToPrincipalPolicy(
+  new PolicyStatement({
+    actions: [
+      
+      "rekognition:DetectLabels",
+      "rekognition:DetectLabel",
+    ],
+    resources: ["*"],
+  })
+);
+
+backend.auth.resources.groups["User"].role.addToPrincipalPolicy(
   new PolicyStatement({
     actions: [
       
