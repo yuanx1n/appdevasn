@@ -67,7 +67,9 @@ const ReportPage: React.FC = () => {
   const handleFileChange = async (info: any) => {
     const { fileList } = info;
     if (fileList.length > 0) {
-      const selectedFile = fileList[0].originFileObj;
+      console.log("File uploaded:", fileList.map((file: any) => file.name));  
+      // Get the most recent file (last item in the fileList)
+      const selectedFile = fileList[fileList.length - 1].originFileObj;
       setFile(selectedFile);
       setImageAnalyzed(false); // Reset analysis status when a new file is uploaded
       await analyzeImage(selectedFile); // Run AI label detection
