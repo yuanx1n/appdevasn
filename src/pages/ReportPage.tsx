@@ -1,6 +1,8 @@
 import React, { useState } from "react";
-import { Button, Form, Input, Layout, Breadcrumb, message, Select, DatePicker, Upload, theme } from "antd";
+import { Button, Form, Input, Layout, Breadcrumb, message, DatePicker, Upload, theme } from "antd";
 import { uploadData } from "aws-amplify/storage";
+import { Predictions } from '@aws-amplify/predictions';
+
 import type { Schema } from "../../amplify/data/resource";
 import { generateClient } from "aws-amplify/data";
 import dayjs from "dayjs"; // Import dayjs for date formatting
@@ -25,46 +27,78 @@ const ReportPage: React.FC = () => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [file, setFile] = useState<File | null>(null); // File state
-  const [showCustomCategory, setShowCustomCategory] = useState(false);
+  const [detectedCategory, setDetectedCategory] = useState<string | undefined>();
+  const [imageAnalyzed, setImageAnalyzed] = useState(false); // New state for image analysis
 
-  const handleCategoryChange = (value: string) => {
-    if (value === "Other") {
-      form.setFieldsValue({ category: "" });
-      setShowCustomCategory(true);
+  const analyzeImage = async (file: File) => {
+    try {
+      message.loading("Analyzing image...");
+      const labels = await Predictions.identify({
+        labels: {
+          source: {
+            file,
+          },
+          type: "LABELS",
+        },
+      });
+
+      console.log("Detected labels:", labels);
+
+      // Ensure labels exist before accessing properties
+      const detectedLabels = labels?.labels ?? []; // Fallback to an empty array if labels are undefined
+
+      if (detectedLabels.length > 0) {
+        const bestLabel = detectedLabels[0].name; // Pick the most relevant label
+        setDetectedCategory(bestLabel);
+        form.setFieldsValue({ category: bestLabel });
+        message.success(`Detected category: ${bestLabel}`);
+        setImageAnalyzed(true); // Mark as analyzed
+      } else {
+        message.warning("No labels detected. Please select a category manually.");
+        setImageAnalyzed(false); // Reset analysis status if no labels detected
+      }
+    } catch (error) {
+      console.error("Error analyzing image:", error);
+      message.error("Failed to analyze image.");
+      setImageAnalyzed(false); // Reset analysis status on failure
     }
   };
 
-  const resetCategory = () => {
-    setShowCustomCategory(false);
-    form.setFieldsValue({ category: undefined }); // Reset the category field
-  };
-
-  const handleFileChange = (info: any) => {
+  const handleFileChange = async (info: any) => {
     const { fileList } = info;
     if (fileList.length > 0) {
-      setFile(fileList[0].originFileObj); // Set the file in state
+      const selectedFile = fileList[0].originFileObj;
+      setFile(selectedFile);
+      setImageAnalyzed(false); // Reset analysis status when a new file is uploaded
+      await analyzeImage(selectedFile); // Run AI label detection
     } else {
       setFile(null);
+      setDetectedCategory(undefined);
+      setImageAnalyzed(false); // Reset analysis status when no file is selected
     }
   };
 
   const handleSubmit = async (values: any) => {
     setLoading(true);
-  
+
     try {
-      // Validate if file is selected
+      // Validate if file is selected and image analysis has completed
       if (!file) {
         message.error("Please upload an image of the item.");
         return;
       }
-  
+      if (!imageAnalyzed) {
+        message.error("Please wait for the image to be analyzed before submitting.");
+        return;
+      }
+
       console.log("Submitting values:", values);
-  
+
       const { name, description, category, location, dateLost } = values;
-  
+
       // Convert the DatePicker value into a string
       const formattedDateLost = dateLost ? dayjs(dateLost).format("YYYY-MM-DD") : "";
-  
+
       // Check if a file is selected, then upload to S3
       let filePath = "";
       if (file) {
@@ -80,17 +114,17 @@ const ReportPage: React.FC = () => {
       } else {
         throw new Error("File is required.");
       }
-  
+
       if (!client?.models?.LostItem) {
         throw new Error("LostItem model is not available in the client.");
       }
-  
+
       // API call to create a new lost item
       const newLostItem = await client.models.LostItem.create(
         {
           name,
           description,
-          category,
+          category: detectedCategory || category,
           location,
           date: formattedDateLost, // Ensure the date is passed as a string
           imagepath: filePath,
@@ -100,11 +134,14 @@ const ReportPage: React.FC = () => {
           authMode: "userPool",
         }
       );
-  
+
       console.log("Created new lost item:", newLostItem);
-  
+
       message.success("Lost item added successfully!");
       form.resetFields();
+      setFile(null);
+      setDetectedCategory(undefined);
+      setImageAnalyzed(false); // Reset analysis status after successful submission
     } catch (error) {
       console.error("Error adding lost item:", error);
       message.error("Failed to add lost item. Please try again.");
@@ -112,7 +149,7 @@ const ReportPage: React.FC = () => {
       setLoading(false);
     }
   };
-  
+
   return (
     <Layout>
       <Content style={{ padding: "0 48px" }}>
@@ -137,6 +174,7 @@ const ReportPage: React.FC = () => {
               label="Lost Item Name"
               name="name"
               rules={[{ required: true, message: "Please enter the lost item name" }]}>
+
               <Input />
             </Form.Item>
 
@@ -144,40 +182,15 @@ const ReportPage: React.FC = () => {
               label="Description"
               name="description"
               rules={[{ required: true, message: "Please enter a description" }]}>
-              <TextArea rows={4} />
-            </Form.Item>
 
-            <Form.Item
-              label="Category"
-              name="category"
-              rules={[{ required: true, message: "Please select or enter a category" }]}>
-              {showCustomCategory ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  <Input placeholder="Enter custom category" />
-                  <Button 
-                    type="link" 
-                    onClick={resetCategory}
-                    style={{ padding: 0, alignSelf: 'flex-start' }}>
-                    ← Back to categories
-                  </Button>
-                </div>
-              ) : (
-                <Select
-                  placeholder="Select a category"
-                  onChange={handleCategoryChange}>
-                  <Select.Option value="Electronics">Electronics</Select.Option>
-                  <Select.Option value="Clothing">Clothing</Select.Option>
-                  <Select.Option value="Documents">Documents</Select.Option>
-                  <Select.Option value="Jewelry">Jewelry</Select.Option>
-                  <Select.Option value="Other">Other (Specify)</Select.Option>
-                </Select>
-              )}
+              <TextArea rows={4} />
             </Form.Item>
 
             <Form.Item
               label="Location Found"
               name="location"
               rules={[{ required: true, message: "Please enter where the item was found" }]}>
+
               <Input />
             </Form.Item>
 
@@ -185,6 +198,7 @@ const ReportPage: React.FC = () => {
               label="Date Lost"
               name="dateLost"
               rules={[{ required: true, message: "Please enter the date the item was lost" }]}>
+
               <DatePicker style={{ width: "100%" }} />
             </Form.Item>
 
@@ -193,18 +207,20 @@ const ReportPage: React.FC = () => {
               valuePropName="fileList"
               getValueFromEvent={normFile}
               rules={[{ required: true, message: "Please upload an image of the item" }]}>
+
               <Upload
                 customRequest={() => {}}
                 onChange={handleFileChange}
                 beforeUpload={() => false} // Prevent default upload behavior
                 showUploadList={false}
                 accept="image/*">
+
                 <Button>Upload Image</Button>
               </Upload>
             </Form.Item>
 
             <Form.Item style={{ textAlign: "center" }}>
-              <Button type="primary" htmlType="submit" loading={loading}>
+              <Button type="primary" htmlType="submit" loading={loading} disabled={!imageAnalyzed}>
                 Report Lost Item
               </Button>
             </Form.Item>
