@@ -6,6 +6,7 @@ import { Layout, Menu, Dropdown, Avatar, Space, Typography } from 'antd';
 import type { MenuProps } from 'antd';
 import { useAuthenticator } from '@aws-amplify/ui-react';
 import { MailOutlined } from '@ant-design/icons';
+import ProfilePage from './pages/ProfilePage';
 
 const { Header, Content, Footer } = Layout;
 const { Title } = Typography;
@@ -32,10 +33,6 @@ const App = () => {
         {
           key: "profile",
           label: <Link to="/profile">Profile</Link>,
-        },
-        {
-          key: "settings",
-          label: <Link to="/settings">Settings</Link>,
         },
         {
           key: "signout",
@@ -96,6 +93,7 @@ const App = () => {
             <Route path="/homepage" element={<HomePage />} />
             <Route path="/itemdetailspage/:id" element={<ItemDetailsPage />} />
             <Route path="/" element={<HomePage />} />
+            <Route path="/profile" element={<ProfilePage />} />
           </Routes>
         </Content>
 
